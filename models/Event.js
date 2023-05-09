@@ -10,6 +10,7 @@ const eventSchema = new Schema({
       ref: "user",
     },
   ],
+  collegeID: String,
   eventID: String,
   Hackathonname: String,
   state: String,
@@ -25,8 +26,11 @@ const eventSchema = new Schema({
     type: Number,
     default: 0,
   },
+  isRestrictedToCollege: {
+    type: Boolean,
+    default: false,
+  },
 });
 
 const ModelClass = mongoose.model("event", eventSchema);
-
 module.exports = ModelClass;

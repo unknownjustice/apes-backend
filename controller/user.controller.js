@@ -72,6 +72,12 @@ const userController = {
         res.status(400).json({ message: "Event not found" });
       } else {
         const user = await User.find({ rollno: rollno });
+        //check for if isRestrictedToCollege is true
+        if (event[0].isRestrictedToCollege) {
+          if (user[0].collegeID != event[0].collegeID) {
+            res.status(400).json({ message: "Not from same college" });
+          }
+        }
         if (user.length == 0) {
           res.status(400).json({ message: "User not found" });
         } else {
