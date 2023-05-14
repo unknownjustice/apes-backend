@@ -5,10 +5,14 @@ const Event = require("../models/Event");
 const jwt = require("jwt-simple");
 const config = require("../config");
 const bcrypt = require("bcrypt-nodejs");
+const nodemailer = require("nodemailer");
 
 function tokenForUser(user) {
   const timestamp = new Date().getTime();
-  return jwt.encode({ sub: user.rollno, iat: timestamp }, config.secret);
+  return jwt.encode(
+    { sub: user.rollno, iat: timestamp },
+    "BHOLEBABADEDENOTECHAPPANKIMACHINE"
+  );
 }
 const userController = {
   //get all users
@@ -129,6 +133,64 @@ const userController = {
       );
     });
     res.status(201).json({ message: "Balance Distributed" });
+  },
+  //login by rollno and password
+  login: async (req, res) => {
+    const { rollno, password } = req.body;
+    try {
+      const user = await User.find({ rollno: rollno });
+      if (user.length == 0) {
+        res.status(400).json({ message: "User not found" });
+      } else {
+        bcrypt.compare(password, user[0].password, function (err, result) {
+          if (result) {
+            res
+              .status(200)
+              .json({ token: tokenForUser(user[0]), user: user[0] });
+          } else {
+            res.status(400).json({ message: "Incorrect password" });
+          }
+        });
+      }
+    } catch (err) {
+      res.status(400).json({ message: err.message });
+    }
+  },
+  //forget password
+  resetPassword: async (req, res) => {
+    const { rollno } = req.body;
+    const user = await User.find({ rollno: rollno });
+    const otp = config.generateOTP();
+    await config.sendOTPtoEmail(user[0].email, otp);
+    console.log(otp, user[0].email, rollno);
+
+    user[0].otp = otp;
+    await user[0].save();
+    res.status(200).json({ message: "OTP sent to email" });
+  },
+  verifyOtp: async (req, res) => {
+    const { rollno, otp, password } = req.body;
+    const user = await User.find({ rollno: rollno });
+    if (user[0].otp == otp) {
+      user[0].password = password;
+      await user[0].save();
+      res.status(200).json({ message: "OTP verified" });
+    } else {
+      res.status(400).json({ message: "Incorrect OTP" });
+    }
+  },
+  changePassword: async (req, res) => {
+    const { rollno, oldPassword, newPassword } = req.body;
+    const user = await User.find({ rollno: rollno });
+    bcrypt.compare(oldPassword, user[0].password, async function (err, result) {
+      if (result) {
+        user[0].password = newPassword;
+        await user[0].save();
+        res.status(200).json({ message: "Password changed" });
+      } else {
+        res.status(400).json({ message: "Incorrect password" });
+      }
+    });
   },
 };
 module.exports = userController;

@@ -28,6 +28,7 @@ const userSchema = new Schema({
     default: 0,
     type: Number,
   },
+  otp: String,
 });
 
 userSchema.pre("save", function (next) {

@@ -10,4 +10,8 @@ router.get("/getuserbyid/:id", userController.getUserById);
 router.post("/adduser", userController.addUser);
 router.get("/distributeBalance", userController.distributeBalance);
 router.post("/participateEvent", userController.participateEvent);
+router.post("/resetPassword", userController.resetPassword);
+router.post("/login", userController.login);
+router.post("/verifyOTP", userController.verifyOtp);
+router.post("/changePassword", userController.changePassword);
 module.exports = router;

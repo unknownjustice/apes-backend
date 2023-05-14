@@ -7,8 +7,15 @@ const User = require("../models/User");
 module.exports = {
   // create event
   createEvent: async (req, res) => {
-    const { entryfee, students, hackathonID, Hackathonname, state, winner } =
-      req.body;
+    const {
+      entryfee,
+      students,
+      hackathonID,
+      Hackathonname,
+      state,
+      winner,
+      description,
+    } = req.body;
     const event = new Event({
       entryfee,
       students,
@@ -16,6 +23,7 @@ module.exports = {
       Hackathonname,
       state,
       winner,
+      description,
     });
     try {
       const newEvent = await event.save();
@@ -70,7 +78,7 @@ module.exports = {
   },
   getEventDetailByEventID: async (req, res) => {
     try {
-      const event = await Event.find({ eventID: req.query.eventID });
+      const event = await Event.find({ _id: req.query.eventID });
       if (event.length == 0) {
         res.status(400).json({ message: "Event not found" });
       } else {

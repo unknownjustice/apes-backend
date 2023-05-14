@@ -2,12 +2,21 @@ const Agenda = require("../models/Agenda");
 module.exports = {
   //create agenda
   createAgenda: async (req, res) => {
-    const { agendaID, agenda, description } = req.body;
-    const agenda_ = new Agenda({
-      agendaID,
-      voters,
+    const {
       agenda,
       description,
+      collegeID,
+      classID,
+      isRestrictedToClass,
+      isRestrictedToBranch,
+    } = req.body;
+    const agenda_ = new Agenda({
+      agenda,
+      description,
+      collegeID,
+      classID,
+      isRestrictedToClass,
+      isRestrictedToBranch,
     });
     try {
       const newAgenda = await agenda_.save();
@@ -17,7 +26,7 @@ module.exports = {
     }
   },
   voteForAgenda: async (req, res) => {
-    const { agendaID, rollno } = req.body;
+    const { agendaID, rollno, isVotedYes } = req.body;
     const user = await User.find({ rollno: rollno });
     if (user.length == 0) {
       res.status(400).json({ message: "User not found" });
@@ -53,14 +62,26 @@ module.exports = {
             "voters.rollno": rollno,
           });
           if (agenda_.length == 0) {
-            const weightage =
-              user[0].balance / 100 +
-              user[0].classperformance / 100 +
-              user[0].attendance / 100;
+            const deductionAmount = 100 / agenda[0].voters.length;
+            user[0].balance = user[0].balance - deductionAmount;
+            user[0].save();
+
+            if (isVotedYes) {
+              agenda[0].inFavourBalance =
+                agenda[0].inFavourBalance + deductionAmount;
+            } else {
+              agenda[0].notInFavourBalance =
+                agenda[0].notInFavourBalance + deductionAmount;
+            }
+
             const newVoter = {
-              rollno: user[0]._id,
-              weightage: weightage,
+              rollno: user[0].rollno,
+              isVotedYes: isVotedYes,
             };
+            agenda[0].finalResult =
+              agenda[0].inFavourBalance > agenda[0].notInFavourBalance
+                ? true
+                : false;
             agenda[0].voters.push(newVoter);
             agenda[0].save();
             res.status(200).json({ message: "Voted successfully" });

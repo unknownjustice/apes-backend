@@ -30,6 +30,13 @@ const eventSchema = new Schema({
     type: Boolean,
     default: false,
   },
+  createdAt: {
+    type: Date,
+    default: Date.now,
+  },
+  description: {
+    type: String,
+  },
 });
 
 const ModelClass = mongoose.model("event", eventSchema);
