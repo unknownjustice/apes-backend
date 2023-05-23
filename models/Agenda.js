@@ -20,6 +20,7 @@ const agendaSchema = new Schema({
       },
     },
   ],
+
   collegeID: String,
   classID: String,
   agenda: String,
@@ -28,6 +29,9 @@ const agendaSchema = new Schema({
   isRestrictedToSection: {
     type: Boolean,
     default: false,
+  },
+  expiryAt: {
+    type: Date,
   },
   isRestrictedToBranch: {
     type: Boolean,
