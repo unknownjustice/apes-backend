@@ -11,10 +11,13 @@ var agendaRouter = require("./routes/agenda");
 var cors = require("cors");
 var app = express();
 mongoose
-  .connect("mongodb://localhost:27017/hackathon", {
-    useNewUrlParser: true,
-    useUnifiedTopology: true,
-  })
+  .connect(
+    "mongodb+srv://User1:S2hw8n1tAgRF1wra@ethereumdatabse1.nyubfiq.mongodb.net/apes?retryWrites=true&w=majority",
+    {
+      useNewUrlParser: true,
+      useUnifiedTopology: true,
+    }
+  )
   .then(() => console.log("DB Connected!"));
 // view engine setup
 app.set("views", path.join(__dirname, "views"));
