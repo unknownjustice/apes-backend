@@ -71,7 +71,7 @@ const userController = {
   participateEvent: async (req, res) => {
     const { rollno, eventID } = req.body;
     try {
-      const event = await Event.find({ eventID: eventID });
+      const event = await Event.find({ _id: eventID });
       if (event.length == 0) {
         res.status(400).json({ message: "Event not found" });
       } else {
@@ -98,7 +98,7 @@ const userController = {
               );
               //addtopool prize
               await Event.updateOne(
-                { eventID: eventID },
+                { _id: eventID },
                 {
                   $push: { students: user[0]._id },
                   $inc: { pool: event[0].entryfee },

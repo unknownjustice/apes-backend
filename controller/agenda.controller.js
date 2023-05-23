@@ -1,4 +1,5 @@
 const Agenda = require("../models/Agenda");
+const Users = require("../models/User");
 module.exports = {
   //create agenda
   createAgenda: async (req, res) => {
@@ -7,6 +8,7 @@ module.exports = {
       description,
       collegeID,
       classID,
+      expiryAt,
       isRestrictedToClass,
       isRestrictedToBranch,
     } = req.body;
@@ -14,6 +16,7 @@ module.exports = {
       agenda,
       description,
       collegeID,
+      expiryAt,
       classID,
       isRestrictedToClass,
       isRestrictedToBranch,
@@ -27,42 +30,57 @@ module.exports = {
   },
   voteForAgenda: async (req, res) => {
     const { agendaID, rollno, isVotedYes } = req.body;
-    const user = await User.find({ rollno: rollno });
+    const agenda = await Agenda.find({ _id: agendaID });
+    const user = await Users.find({ rollno: rollno });
     if (user.length == 0) {
       res.status(400).json({ message: "User not found" });
     } else {
-      if (user[0].balance < 100) {
+      var deductionAmount = 0;
+      if (agenda[0].voters.length == 0) {
+        var users = await Users.find({
+          branch: agenda[0].branch,
+          section: agenda[0].section,
+        });
+        let sumOfBalance = 0;
+        users.forEach((user) => {
+          sumOfBalance = sumOfBalance + user.balance;
+        });
+        deductionAmount = sumOfBalance * 0.3;
+      } else {
+        deductionAmount = 100 / agenda[0].voters.length;
+      }
+      deductionAmount = parseInt(deductionAmount);
+
+      if (user[0].balance < deductionAmount) {
         res.status(400).json({ message: "Insufficient balance" });
       } else {
         //check if user has already voted
-        const agenda = await Agenda.find({ agendaID: agendaID });
 
         if (agenda.length == 0) {
           res.status(400).json({ message: "Agenda not found" });
         } else {
-          //check for if isRestrictedToCollege is true
-          if (agenda[0].isRestrictedToCollege) {
-            if (agenda[0].collegeID != user[0].collegeID) {
-              res.status(400).json({ message: "Not from same college" });
+          if (agenda[0].isRestrictedToBranch) {
+            if (agenda[0].branch != user[0].branch) {
+              res.status(400).json({ message: "Not from same branch" });
             }
           }
-          //check for if isRestrictedToClass is true
-          if (agenda[0].isRestrictedToClass) {
-            if (agenda[0].classID != user[0].classID) {
-              res.status(400).json({ message: "Not from same class" });
+
+          if (agenda[0].isRestrictedToSection) {
+            if (agenda[0].section != user[0].section) {
+              res.status(400).json({ message: "Not from same section" });
             }
           }
+
           agenda[0].voters.forEach((voter) => {
             if (voter.rollno == rollno) {
               return res.status(400).json({ message: "Already voted" });
             }
           });
-          const agenda_ = await Agenda.find({
-            agendaID: agendaID,
-            "voters.rollno": rollno,
-          });
-          if (agenda_.length == 0) {
-            const deductionAmount = 100 / agenda[0].voters.length;
+          let isUserAlreadyVoted = agenda[0].voters.find(
+            (voter) => voter.rollno == rollno
+          );
+
+          if (!isUserAlreadyVoted) {
             user[0].balance = user[0].balance - deductionAmount;
             user[0].save();
 
@@ -75,7 +93,7 @@ module.exports = {
             }
 
             const newVoter = {
-              rollno: user[0].rollno,
+              rollno: user[0]._id,
               isVotedYes: isVotedYes,
             };
             agenda[0].finalResult =
@@ -99,13 +117,32 @@ module.exports = {
     }
   },
   fetchAgenda: async (req, res) => {
-    const { agendaID } = req.body;
+    const { agendaID } = req.query;
+
     try {
-      const agenda = await Agenda.find({ agendaID: agendaID });
+      var agenda = await Agenda.find({ _id: agendaID });
       if (agenda.length == 0) {
         res.status(400).json({ message: "Agenda not found" });
       } else {
-        res.status(200).json(agenda);
+        var deductionAmount = 0;
+        if (agenda[0].voters.length == 0) {
+          var users = await Users.find({
+            branch: agenda[0].branch,
+            section: agenda[0].section,
+          });
+          let sumOfBalance = 0;
+          users.forEach((user) => {
+            sumOfBalance = sumOfBalance + user.balance;
+          });
+          deductionAmount = sumOfBalance * 0.3;
+        } else {
+          deductionAmount = 100 / agenda[0].voters.length;
+        }
+        deductionAmount = parseInt(deductionAmount);
+        return res.status(200).json({
+          agenda,
+          deductionAmount,
+        });
       }
     } catch (err) {
       res.status(400).json({ message: err.message });

@@ -13,11 +13,13 @@ module.exports = {
       hackathonID,
       Hackathonname,
       state,
+      expiryAt,
       winner,
       description,
     } = req.body;
     const event = new Event({
       entryfee,
+      expiryAt,
       students,
       hackathonID,
       Hackathonname,
@@ -43,12 +45,15 @@ module.exports = {
   fetchParticipents: async (req, res) => {
     const { eventID } = req.body;
     try {
-      const event = await Event.find({ eventID: eventID });
+      const event = await Event.find({ _id: eventID });
       if (event.length == 0) {
         res.status(400).json({ message: "Event not found" });
       } else {
         const users = await User.find({ _id: { $in: event[0].students } });
-        res.status(200).json(users);
+        res.status(200).json({
+          users,
+          eventDetail: event[0],
+        });
       }
     } catch (err) {
       res.status(400).json({ message: err.message });
@@ -57,7 +62,7 @@ module.exports = {
   isParticipent: async (req, res) => {
     const { rollno, eventID } = req.body;
     try {
-      const event = await Event.find({ eventID: eventID });
+      const event = await Event.find({ _id: eventID });
       if (event.length == 0) {
         res.status(400).json({ message: "Event not found" });
       } else {

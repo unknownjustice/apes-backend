@@ -7,6 +7,14 @@ const userSchema = new Schema({
   name: String,
   collegeID: String,
   phoneno: String,
+  section: {
+    type: String,
+    default: "A",
+  },
+  branch: {
+    type: String,
+    default: "CSE",
+  },
   email: { type: String, unique: true, lowercase: true },
   attendance: {
     type: Number,

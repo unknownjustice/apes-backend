@@ -25,7 +25,7 @@ const agendaSchema = new Schema({
   agenda: String,
   description: String,
 
-  isRestrictedToClass: {
+  isRestrictedToSection: {
     type: Boolean,
     default: false,
   },
@@ -33,18 +33,32 @@ const agendaSchema = new Schema({
     type: Boolean,
     default: false,
   },
+  isRestrictedToCollege: {
+    type: Boolean,
+    default: true,
+  },
   createdAt: {
     type: Date,
     default: Date.now,
   },
   inFavourBalance: {
     type: Number,
+    default: 0,
   },
   notInFavourBalance: {
     type: Number,
+    default: 0,
   },
   finalResult: {
     type: Boolean,
+  },
+  branch: {
+    type: String,
+    default: "CSE",
+  },
+  section: {
+    type: String,
+    default: "A",
   },
 });
 
@@ -56,24 +70,6 @@ function computeWeightage(attendance, classPerformance) {
     attendance * attendanceWeight + classPerformance * classPerformanceWeight
   );
 }
-
-// Middleware function to update weightage value for each voter
-agendaSchema.pre("save", async function (next) {
-  const agenda = this;
-  const voterRollnos = agenda.voters.map((voter) => voter.rollno);
-  const users = await mongoose
-    .model("user")
-    .find({ rollno: { $in: voterRollnos } })
-    .exec();
-  agenda.voters.forEach((voter) => {
-    const user = users.find((u) => u.rollno.equals(voter.rollno));
-    const attendance = user.attendance;
-    const classPerformance = user.classPerformance;
-    const weightage = computeWeightage(attendance, classPerformance);
-    voter.weightage = weightage;
-  });
-  next();
-});
 
 const ModelClass = mongoose.model("agenda", agendaSchema);
 module.exports = ModelClass;

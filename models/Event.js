@@ -22,6 +22,9 @@ const eventSchema = new Schema({
     type: Boolean,
     default: true,
   },
+  expiryAt: {
+    type: Date,
+  },
   pool: {
     type: Number,
     default: 0,
