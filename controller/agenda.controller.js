@@ -148,4 +148,21 @@ module.exports = {
       res.status(400).json({ message: err.message });
     }
   },
+  fetchParticipents: async (req, res) => {
+    const { agendaID } = req.body;
+    try {
+      const agenda = await Agenda.find({ _id: agendaID });
+      if (agenda.length == 0) {
+        res.status(400).json({ message: "Agenda not found" });
+      } else {
+        const users = await Users.find({ _id: { $in: agenda[0].voters } });
+        res.status(200).json({
+          users,
+          eventDetail: agenda[0],
+        });
+      }
+    } catch (err) {
+      res.status(400).json({ message: err.message });
+    }
+  },
 };

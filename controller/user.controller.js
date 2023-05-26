@@ -139,6 +139,7 @@ const userController = {
     const { rollno, password } = req.body;
     try {
       const user = await User.find({ rollno: rollno });
+      console.log(user, rollno);
       if (user.length == 0) {
         res.status(400).json({ message: "User not found" });
       } else {

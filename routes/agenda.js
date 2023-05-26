@@ -9,5 +9,5 @@ router.post("/voteForAgenda", agendaController.voteForAgenda); //get voters of a
 //router.post("/isVoter", agendaController.isVoter); //check if user is voter of an agenda
 router.get("/fetchAgenda", agendaController.fetchAgenda); //get agenda by id
 //router.post("/decideWinner", agendaController.decideWinner); //decide winner of an agenda
-
+router.post("/getParticipents", agendaController.fetchParticipents);
 module.exports = router;
