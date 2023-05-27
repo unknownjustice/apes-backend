@@ -155,9 +155,12 @@ module.exports = {
       if (agenda.length == 0) {
         res.status(400).json({ message: "Agenda not found" });
       } else {
-        const users = await Users.find({
-          _id: { $in: agenda[0].voters.map((user) => user.rollno) },
+        var users = [];
+        agenda[0].voters.forEach((voter) => {
+          users.push(voter.rollno);
         });
+        users = await Users.find({ _id: { $in: users } });
+
         res.status(200).json({
           users,
           eventDetail: agenda[0],
