@@ -37,6 +37,10 @@ const userSchema = new Schema({
     type: Number,
   },
   otp: String,
+  isAdmin: {
+    type: Boolean,
+    default: false,
+  },
 });
 
 userSchema.pre("save", function (next) {
